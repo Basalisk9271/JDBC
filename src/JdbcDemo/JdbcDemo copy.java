@@ -16,9 +16,12 @@ public class JdbcDemo {
         String connectionUrl = "jdbc:sqlserver://;" +
                 "servername=csdata.cd4sevot432y.us-east-1.rds.amazonaws.com;"
                 + "user=csc312cloud;password=c3s!c2Cld;";
-        String dbName = "StudTest";
+        String dbName = "JLBookstore";
         connectionUrl += "databaseName=" + dbName + ";";
-        String query = "select c.Customer#, FirstName, LastName, Login, Password, Photo"+"\nfrom JLBookstore.dbo.Customers c join GI27Login f"+"\non (c.Customer# = f.Customer#)";
+        String query = "SELECT b.Title, CONCAT(a.Fname,' ', a.Lname) as [Author Name], p.Name as [Publisher Name]"+
+        "\nFROM [JLBookstore].[dbo].[Books] b, [JLBookstore].[dbo].[Author] a, [JLBookstore].[dbo].[BOOKAUTHOR] BA, [JLBookstore].[dbo].[Publisher] p"+
+        "\nWHERE (b.ISBN = BA.ISBN) and (a.AuthorID = BA.AuthorID) AND (b.PubID = p.PubID) AND b.category = 'COMPUTER'"+
+        "\nORDER BY b.Title, a.Lname";
   
   
         ResultSet result = null;
@@ -32,14 +35,14 @@ public class JdbcDemo {
             //System.out.println(columns);
             int j;
             for (j=1; j<=columns; j++){
-                System.out.print(meta.getColumnName(j)+"\t\t");
+                System.out.print(meta.getColumnName(j)+"    \t\t\t");
             }
             System.out.println("\n");
             
             while (result.next()) {
                 for (int i=1; i<=columns; i++)
                     System.out.print(result.getString(i) +
-                            ((i==columns)?"":"\t\t\t"));
+                            ((i==columns)?"":"\t\t"));
                 System.out.println("\n");
             }
             

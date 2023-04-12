@@ -1,39 +1,42 @@
 package JdbcDemo;
 
-import JdbcDemo.DataObjectAccessor;
-
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.LinkedList;
 
-public class SqlServerDbAccessor implements DataObjectAccessor {
-	private String[] columnNamesToReturn;
-	private Object[][] dataToReturn;
-	
+public class SqlServerDbAccessor {
+
 	private Connection con;
 	private Statement stmt;
+	private PreparedStatement prepStmt;
 	private ResultSet rs;
+	
+	private String connectionUrl;
+	
+	private String defaultConnUrl = "jdbc:sqlserver://;" +
+            "servername=csdata.cd4sevot432y.us-east-1.rds.amazonaws.com;"
+			+ "user=csc312cloud;password=c3s!c2Cld;"; 
 
 	public SqlServerDbAccessor() {
-		/*
-		String connectionUrl = "jdbc:sqlserver://;servername=cssql\\sqldata;"
-				+ "user=csc480dev;password=c4s*C0sWe;" +
-			"databaseName=JLBookstore;";
-		*/
-		String connectionUrl = "jdbc:sqlserver://;" +
-	            "servername=csdata.cd4sevot432y.us-east-1.rds.amazonaws.com;"
-	            + "user=csc312cloud;password=c3s!c2Cld;"; 
-
-		String dbName = "JLBookstore";
+		connectionUrl = defaultConnUrl;
+	}
+	
+	public SqlServerDbAccessor(String serverName, String user, String pwd, 
+			String dbName) {
+		connectionUrl = "jdbc:sqlserver://;";
+		connectionUrl += "servername=" + serverName + ";"; 
+		connectionUrl += "user=" + user + ";"; 
+		connectionUrl += "password=" + pwd + ";"; 
 		connectionUrl += "databaseName=" + dbName + ";"; 
-
-		// Declare the JDBC objects.
-		
+	}
+	
+	public void setDbName(String dbName) {
+		connectionUrl += "databaseName=" + dbName;
+	}
+	
+	public void connectToDb() {
     	try {
     		// Establish the connection.
     		Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
@@ -43,78 +46,19 @@ public class SqlServerDbAccessor implements DataObjectAccessor {
 		}
 
 	}
-	
-	@Override
-	public String[] getColNamesForTable(String tableName) {
-		// TODO Auto-generated method stub
-		String SQL = "SELECT * FROM ";
 
-		try {
-			DatabaseMetaData databaseMetaData = con.getMetaData();
-			/*
-			stmt = con.createStatement();
-			rs = stmt.executeQuery(SQL + tableName);
-	        ResultSetMetaData meta = rs.getMetaData();
-	        System.out.println(columns);
-	        columnNamesToReturn = new String[columns];
-	        for (int i=1; i<=columns; i++) {
-	        	columnNamesToReturn[i-1] = meta.getColumnName(i);
-	            System.out.print(meta.getColumnName(i) + ", ");
-	        }
-	        	
-	        System.out.println();
-			*/
-	        ResultSet columns = databaseMetaData.getColumns(null,null, tableName, null);
-	        LinkedList<String> columnNames = new LinkedList<String>();
-	        while (columns.next()) {
-	        	columnNames.add(columns.getString("COLUMN_NAME"));
-	        }
-	        columnNamesToReturn = columnNames.toArray(new String[columnNames.size()]);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		return columnNamesToReturn;
+	public PreparedStatement getPrepStmt() {
+		// TODO Auto-generated method stub
+		return prepStmt;
 	}
 
-	@Override
-	public Object[][] getData(String tableName) {
+	public Connection getConnection() {
 		// TODO Auto-generated method stub
-		String SQL = "SELECT * FROM ";
-		String[] row; 
-		LinkedList<String[]> contents = new LinkedList<String[]>();
-		try {
-			stmt = con.createStatement();
-			rs = stmt.executeQuery(SQL + tableName);
-	        ResultSetMetaData meta = rs.getMetaData();
-	        int columns = meta.getColumnCount();
-	        System.out.println(columns);
-	        row = new String[columns];
-	        
-    		while (rs.next()) {
-                for (int i=1; i<=columns; i++) {
-                    System.out.print(rs.getString(i) + 
-                            ((i==columns)?"":", "));
-                	row[i-1] = rs.getString(i);
-                }
-                System.out.println();
-                contents.add(row);
-                row = new String[columns];
-    		}
-	        System.out.println();
-	        
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		System.out.println(contents.size() + "," + contents.get(0).length);
-		
-		dataToReturn = new Object[contents.size()][contents.get(0).length];
-		for (int i=0; i<contents.size(); i++)
-			dataToReturn[i] = contents.get(i);
-		return dataToReturn;
+		return con;
 	}
 
+	public String getUrl() {
+		// TODO Auto-generated method stub
+		return connectionUrl;
+	}
 }
